@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Threading;
 
 namespace CLRConcurrencyStudy.Fundamentals
@@ -7,40 +8,38 @@ namespace CLRConcurrencyStudy.Fundamentals
     {
         static void Main(string[] args)
         {
-            var thread1 = new Thread(() => { PrintRepeatedMessage(Thread.CurrentThread.Name, 10); })
-                {Name = "New Thread 1"};
-
-            var thread2 = new Thread(() =>
+            ThreadStart baseDelegate = () =>
             {
-                //  the right approach
-                try
-                {
-                    //  this throws the exception
-                    PrintRepeatedMessage(Thread.CurrentThread.Name, -7);
-                }
-                catch (Exception e)
-                {
-                    Console.WriteLine("Handled exception within the thread");
-                }
-            }) {Name = "New Thread 2"};
+                var stopwatch = Stopwatch.StartNew();
+                stopwatch.Start();
 
-            thread1.Start();
+                for (int i = 0; i < 1_000_000_000; i++)
+                {
+                    long j = i * 101;
+                }
+
+                stopwatch.Stop();
+
+                Console.WriteLine($"{Thread.CurrentThread.Name} finished in {stopwatch.Elapsed.TotalMilliseconds}");
+            };
+
+            var thread1 = new Thread(baseDelegate)
+                {Name = "Normal Priority Thread", Priority = ThreadPriority.Normal};
+            
+            var thread2 = new Thread(baseDelegate)
+                {Name = "Low Priority Thread", Priority = ThreadPriority.Lowest};
+            
+            var thread3 = new Thread(baseDelegate)
+                {Name = "High Priority Thread", Priority = ThreadPriority.Highest};
+            
             thread2.Start();
-        }
-
-        static void PrintRepeatedMessage(string message, int nRepetitions)
-        {
-            if (nRepetitions <= 0)
-            {
-                throw new Exception("Oops!");
-            }
-
-            for (int i = 0; i < nRepetitions; i++)
-            {
-                Console.WriteLine($"{message}: index: {i}");
-            }
-
-            Console.WriteLine($"{message} completed successfully");
+            thread1.Start();
+            thread3.Start();
+            
+            //  Please note: thread priority is conveyed to OS (usually on a scale of 10)
+            //  Actual execution depends on various factors such as scheduling, other processes, etc.
+            //  It's better to stay away from manually tweaking thread priority as it violates fairness
+            //  for other threads (they starve).
         }
     }
 }
