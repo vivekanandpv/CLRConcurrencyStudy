@@ -7,23 +7,35 @@ namespace CLRConcurrencyStudy.Fundamentals
     {
         static void Main(string[] args)
         {
-            Action<int, string, DateTime> actionDelegate = (n, s, d) =>
+            var thread1 = new Thread(() =>
             {
-                Console.WriteLine($"You have passed: int = {n}; string = {s}; DatTime = {d}");
-            };
+                PrintRepeatedMessage(Thread.CurrentThread.Name, 10);
+            }) {Name = "New Thread 1"};
+            
+            var thread2 = new Thread(() =>
+            {
+                PrintRepeatedMessage(Thread.CurrentThread.Name, 10);
+            }) {Name = "New Thread 2"};
+            
+            thread1.Start();
+            thread2.Start();
+            
+            //  Question: what will happen if thread2 passes nRepetitions as -1?
+        }
 
-            var thread = new Thread(() =>
+        static void PrintRepeatedMessage(string message, int nRepetitions)
+        {
+            if (nRepetitions <= 0)
             {
-                Console.WriteLine($"Executing: {Thread.CurrentThread.Name}");
-                
-                //  Use a method call inside
-                actionDelegate(100, "Hi there!", DateTime.Now);
-            }) {Name = "New Thread"};
+                throw new Exception("Oops!");
+            }
             
-            thread.Start();
-            
-            //  Please note: you cannot return a value from a thread
-            //  Beware of the captured variables in lambda expressions (say, a loop)
+            for (int i = 0; i < nRepetitions; i++)
+            {
+                Console.WriteLine($"{message}: index: {i}");    
+            }
+
+            Console.WriteLine($"{message} completed successfully");
         }
     }
 }
