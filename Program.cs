@@ -8,29 +8,43 @@ namespace CLRConcurrencyStudy.Fundamentals
     {
         static void Main(string[] args)
         {
-            for (int i = 0; i < 1_000_000_000; i++)
+            var counter = new NonSynchronizedCounter();
+            
+            for (var i = 0; i < 10; ++i)
             {
-                if (i == 1)
+                var thread = new Thread(() =>
                 {
-                    var thread = new Thread(() =>
+                    for (var j = 0; j < 1_000_000; ++j)
                     {
-                        Console.WriteLine($"{Thread.CurrentThread.Name} starting");
-                        Thread.Sleep(100);
-                        //  this lambda expression captures the local variable i
-                        //  that is defined and modified in the outer scope
-                        //  because of the modification in the outer scope
-                        //  the exact value of i here is non-deterministic
-                        
-                        //  This happens because, it is the same memory location that
-                        //  gets overwritten with new values for i
-                        
-                        //  Access to i is permitted in C#. In Java, this is prohibited.
-                        Console.WriteLine($"{Thread.CurrentThread.Name}: i = {i}");
-                    }) {Name = "New Thread"};
-                    
-                    thread.Start();
-                }
+                        //  counter is the shared state (variable)
+                        counter.Increment();
+                        counter.Decrement();
+                    }
+                });
+                
+                thread.Start();
             }
+
+            //  We expect zero, but we get...
+            Console.WriteLine($"Final value: {counter.Value}");
+        }
+    }
+
+    class NonSynchronizedCounter
+    {
+        public int Value { get; private set; }
+
+        public void Increment()
+        {
+            //  This is a non atomic operation
+            //  Has 3 parts: read, increment, and write operations
+            ++Value;
+        }
+
+        public void Decrement()
+        {
+            //  This too is non-atomic for the same reason
+            --Value;
         }
     }
 }
