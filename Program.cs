@@ -14,13 +14,23 @@ namespace CLRConcurrencyStudy.Fundamentals
             
             var thread2 = new Thread(() =>
             {
-                PrintRepeatedMessage(Thread.CurrentThread.Name, 10);
+                //  this throws the exception
+                PrintRepeatedMessage(Thread.CurrentThread.Name, -7);
             }) {Name = "New Thread 2"};
             
             thread1.Start();
-            thread2.Start();
-            
-            //  Question: what will happen if thread2 passes nRepetitions as -1?
+
+            //  doesn't work
+            //  thread2 has its own stack as the main thread
+            //  exceptions do not propagate across stacks
+            try
+            {
+                thread2.Start();
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("Do we see this?");
+            }
         }
 
         static void PrintRepeatedMessage(string message, int nRepetitions)
