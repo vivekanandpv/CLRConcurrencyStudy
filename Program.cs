@@ -7,24 +7,23 @@ namespace CLRConcurrencyStudy.Fundamentals
     {
         static void Main(string[] args)
         {
-            Console.WriteLine("Main thread starting...");
-            
+            Action<int, string, DateTime> actionDelegate = (n, s, d) =>
+            {
+                Console.WriteLine($"You have passed: int = {n}; string = {s}; DatTime = {d}");
+            };
+
             var thread = new Thread(() =>
             {
-                Console.WriteLine($"{Thread.CurrentThread.Name} starting...");
-                Thread.Sleep(2000);
-                Console.WriteLine($"{Thread.CurrentThread.Name} completing...");
-            }){Name = "New Thread"};
-
+                Console.WriteLine($"Executing: {Thread.CurrentThread.Name}");
+                
+                //  Use a method call inside
+                actionDelegate(100, "Hi there!", DateTime.Now);
+            }) {Name = "New Thread"};
+            
             thread.Start();
-
-            //  We block the main thread here
-            //  We wait (without wasting CPU cycles) till thread finishes
-            //  Without thread.Join(); execution should have proceed to the next
-            //  instruction in the main thread (to "Main thread resumes...")
-            thread.Join();  
-
-            Console.WriteLine("Main thread resumes...");
+            
+            //  Please note: you cannot return a value from a thread
+            //  Beware of the captured variables in lambda expressions (say, a loop)
         }
     }
 }
