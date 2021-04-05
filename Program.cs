@@ -7,17 +7,25 @@ namespace CLRConcurrencyStudy.Fundamentals
     {
         static void Main(string[] args)
         {
-            //  CLR starts the process with a thread called main thread, usually with id 1
-            Console.WriteLine($"Running on {Thread.CurrentThread.ManagedThreadId}");
+            //  Thread constructor takes a ThreadStart delegate            
+            var thread1 = new Thread(() =>
+            {
+                Console.WriteLine($"Running {Thread.CurrentThread.Name}");
+            }) {Name = "New thread 1"};
             
-            //  This current thread is right now in Running state (doing computation)
-            Console.WriteLine($"Current status {Thread.CurrentThread.ThreadState}");
             
-            //  Thread can be blocked and thus relinquish the execution time (preemptive concurrency)
-            Thread.Sleep(1000);
             
-            //  Below line is executed after the thread resumes execution
-            Console.WriteLine($"Resuming operation of {Thread.CurrentThread.ManagedThreadId}");
+            var thread2 = new Thread(v =>
+            {
+                Console.WriteLine($"Running {Thread.CurrentThread.Name} with parameter: {v}");
+            }) {Name = "New thread 2"};
+            
+            //  Though you can start the threads in some order, the actual order
+            //  of execution depends on OS' scheduler. This is unpredictable.
+            
+            thread1.Start();
+            thread2.Start(1234);    //  parameter is of type object; v = 1234
+            Console.WriteLine("Running Main thread");
         }
     }
 }
