@@ -8,38 +8,17 @@ namespace CLRConcurrencyStudy.Fundamentals
     {
         static void Main(string[] args)
         {
-            ThreadStart baseDelegate = () =>
+            var backgroundThread = new Thread(() =>
             {
-                var stopwatch = Stopwatch.StartNew();
-                stopwatch.Start();
-
-                for (int i = 0; i < 1_000_000_000; i++)
-                {
-                    long j = i * 101;
-                }
-
-                stopwatch.Stop();
-
-                Console.WriteLine($"{Thread.CurrentThread.Name} finished in {stopwatch.Elapsed.TotalMilliseconds}");
-            };
-
-            var thread1 = new Thread(baseDelegate)
-                {Name = "Normal Priority Thread", Priority = ThreadPriority.Normal};
+                Console.WriteLine($"{Thread.CurrentThread.Name} executing");
+                //  Application doesn't wait for this blocking as this is a background thread
+                Thread.Sleep(10000);
+                Console.WriteLine($"{Thread.CurrentThread.Name} finishes");
+            }) {Name = "Background thread", IsBackground = true};
             
-            var thread2 = new Thread(baseDelegate)
-                {Name = "Low Priority Thread", Priority = ThreadPriority.Lowest};
-            
-            var thread3 = new Thread(baseDelegate)
-                {Name = "High Priority Thread", Priority = ThreadPriority.Highest};
-            
-            thread2.Start();
-            thread1.Start();
-            thread3.Start();
-            
-            //  Please note: thread priority is conveyed to OS (usually on a scale of 10)
-            //  Actual execution depends on various factors such as scheduling, other processes, etc.
-            //  It's better to stay away from manually tweaking thread priority as it violates fairness
-            //  for other threads (they starve).
+            backgroundThread.Start();
+
+            Console.WriteLine("Main thread exits...");
         }
     }
 }
