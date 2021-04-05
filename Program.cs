@@ -7,25 +7,30 @@ namespace CLRConcurrencyStudy.Fundamentals
     {
         static void Main(string[] args)
         {
-            //  Thread constructor takes a ThreadStart delegate            
+            //  We can set a name for a thread
+            //  But cannot change it once the thread starts executing
             var thread1 = new Thread(() =>
             {
-                Console.WriteLine($"Running {Thread.CurrentThread.Name}");
+                Console.WriteLine($"Starting {Thread.CurrentThread.Name}");
+                
+                //  A thread created this way is a foreground thread
+                //  Application won't exit unless all foreground threads
+                //  have finished executing
+                Console.WriteLine($"{Thread.CurrentThread.Name} is foreground: {!Thread.CurrentThread.IsBackground}");
+
+                //  Blocking: we relinquish the CPU time for the specified timeout
+                //  During this interval, the thread consumes no CPU cycles
+                //  But the thread is alive (not finished) nonetheless
+                Console.WriteLine($"{Thread.CurrentThread.Name} is alive: {Thread.CurrentThread.IsAlive}");
+                Thread.Sleep(5000);
+                Console.WriteLine($"{Thread.CurrentThread.Name} completing");
             }) {Name = "New thread 1"};
-            
-            
-            
-            var thread2 = new Thread(v =>
-            {
-                Console.WriteLine($"Running {Thread.CurrentThread.Name} with parameter: {v}");
-            }) {Name = "New thread 2"};
-            
-            //  Though you can start the threads in some order, the actual order
-            //  of execution depends on OS' scheduler. This is unpredictable.
-            
+         
             thread1.Start();
-            thread2.Start(1234);    //  parameter is of type object; v = 1234
-            Console.WriteLine("Running Main thread");
+
+            //  Though this looks like the end of the program,
+            //  it isn't. 
+            Console.WriteLine("Main thread completing");
         }
     }
 }
