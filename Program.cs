@@ -9,7 +9,7 @@ namespace CLRConcurrencyStudy.Fundamentals
     {
         static void Main(string[] args)
         {
-            var counter = new NonSynchronizedCounter();
+            var counter = new SynchronizedCounter();
 
             var threadList = new List<Thread>();
 
@@ -41,7 +41,7 @@ namespace CLRConcurrencyStudy.Fundamentals
         }
     }
 
-    class NonSynchronizedCounter
+    class SynchronizedCounter
     {
         public int Value { get; private set; }
 
